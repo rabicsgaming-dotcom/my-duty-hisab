@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#123b32">
+<meta name="description" content="Personal duty, meals, income and expense tracker">
+<title>My Duty Hisab</title>
+<style>
+:root{font-family:system-ui,-apple-system,sans-serif;color:#17332d;background:#f2f6f3}
+*{box-sizing:border-box}body{margin:0;padding:16px;max-width:680px;margin:auto}
+header{background:#123b32;color:white;padding:20px;border-radius:18px;margin-bottom:15px}
+h1{font-size:23px;margin:0 0 5px}.muted{color:#688078;font-size:13px}
+header .muted{color:#d1e2db}.lang{float:right;background:#e1eee8;color:#123b32;border:0;border-radius:9px;padding:9px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.stat,.card{background:white;border:1px solid #dce8e1;border-radius:15px;padding:14px}
+.stat small{color:#688078}.stat strong{display:block;font-size:21px;margin-top:5px;overflow-wrap:anywhere}
+.card{margin-bottom:14px}.card h2{font-size:17px;margin:0 0 13px}
+label{display:block;color:#688078;font-size:13px;margin:10px 0 5px}
+input,textarea{font:inherit;width:100%;padding:11px;border:1px solid #d6e2db;border-radius:9px;background:#fbfdfb;color:#17332d}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button{font:inherit;cursor:pointer;border:0;border-radius:10px;padding:10px 13px}
+.primary{background:#167653;color:white;width:100%;font-weight:700;margin-top:13px}
+.secondary{background:#e5f0e9;color:#164c39}.danger{background:#f8e9e7;color:#963d31}
+.entry{background:#f4f8f5;padding:12px;border-radius:11px;margin:9px 0}
+.entry b{font-size:14px}.entry p{font-size:13px;margin:6px 0;color:#587168;overflow-wrap:anywhere}
+.entry button{padding:7px 9px;background:#e2eee7;color:#164c39;font-size:12px;margin:4px 5px 0 0}
+.tools{display:flex;gap:8px;flex-wrap:wrap}.tools button{font-size:13px}
+#feedback{font-size:12px;color:#167653;text-align:center;margin-top:10px;min-height:18px}
+footer{text-align:center;padding:8px;color:#688078;font-size:12px}
+</style>
+</head>
+<body>
+<header><button class="lang" id="langBtn">English</button><h1>📋 My Duty Hisab</h1><div class="muted" id="subtitle">তোমার প্রতিদিনের কাজের ডায়েরি</div></header>
+<section class="grid">
+<div class="stat"><small id="daysLabel">মোট ডিউটির দিন</small><strong id="days">0</strong></div>
+<div class="stat"><small id="hoursLabel">মোট কাজের ঘণ্টা</small><strong id="hours">0</strong></div>
+<div class="stat"><small id="incomeLabel">মোট আয়</small><strong id="income">₹0</strong></div>
+<div class="stat"><small id="expenseLabel">মোট খরচ</small><strong id="expense">₹0</strong></div>
+</section>
+<section class="card">
+<h2 id="formTitle">➕ নতুন ডিউটির হিসাব</h2>
+<label id="dateLabel">তারিখ</label><input id="date" type="date">
+<div class="two">
+<div><label id="startLabel">ডিউটি শুরু</label><input id="start" type="time" value="08:00"></div>
+<div><label id="endLabel">ডিউটি শেষ</label><input id="end" type="time" value="20:00"></div>
+</div>
+<div class="two">
+<div><label id="mealsLabel">কতবার খাবার</label><input id="meals" type="number" min="0" step="1" value="2"></div>
+<div><label id="incomeFieldLabel">আয় (₹)</label><input id="earn" type="number" min="0" step="0.01" placeholder="0"></div>
+</div>
+<label id="expenseFieldLabel">আজকের খরচ (₹)</label><input id="spend" type="number" min="0" step="0.01" placeholder="0">
+<label id="noteLabel">নোট</label><input id="note" type="text" maxlength="160" placeholder="আজ কী কাজ করলে?">
+<p class="muted" id="duration">কাজের সময়: 12 ঘণ্টা</p>
+<button class="primary" id="saveBtn">💾 হিসাব সেভ করো</button><div id="feedback" aria-live="polite">হিসাব এই ফোনে সেভ থাকবে।</div>
+</section>
+<section class="card"><h2 id="historyTitle">📅 ডিউটির পুরোনো হিসাব</h2><div id="records" class="muted">এখনও কোনো হিসাব নেই।</div></section>
+<section class="card"><h2 id="backupTitle">💾 Backup & Restore</h2><div class="tools"><button class="secondary" id="exportBtn">হিসাব Backup</button><button class="secondary" id="importBtn">Backup Restore</button><button class="danger" id="clearBtn">সব হিসাব মুছুন</button></div><input id="importFile" type="file" accept="application/json,.json" hidden><p class="muted" id="backupNote">ফোন বদলানোর আগে Backup ডাউনলোড করে রাখো।</p></section>
+<footer>My Duty Hisab · Version 1.1 · Offline personal tracker</footer>
+<script>
+const $=id=>document.getElementById(id);
+const words={
+bn:{subtitle:'তোমার প্রতিদিনের কাজের ডায়েরি',days:'মোট ডিউটির দিন',hours:'মোট কাজের ঘণ্টা',income:'মোট আয়',expense:'মোট খরচ',form:'➕ নতুন ডিউটির হিসাব',date:'তারিখ',start:'ডিউটি শুরু',end:'ডিউটি শেষ',meals:'কতবার খাবার',earn:'আয় (₹)',spend:'আজকের খরচ (₹)',note:'নোট',placeholder:'আজ কী কাজ করলে?',time:'কাজের সময়',hour:'ঘণ্টা',save:'💾 হিসাব সেভ করো',history:'📅 ডিউটির পুরোনো হিসাব',empty:'এখনও কোনো হিসাব নেই।',net:'হাতে থাকে',meal:'বার খাবার',edit:'এডিট',del:'মুছুন',saved:'হিসাব সেভ হয়েছে!',device:'হিসাব এই ফোনে সেভ থাকবে।',backup:'💾 Backup & Restore',export:'হিসাব Backup',restore:'Backup Restore',clear:'সব হিসাব মুছুন',backupNote:'ফোন বদলানোর আগে Backup ডাউনলোড করে রাখো।',confirm:'সব হিসাব মুছে ফেলবে?',restored:'Backup ফিরিয়ে আনা হয়েছে।',badFile:'সঠিক Backup JSON ফাইল নির্বাচন করো।',exported:'Backup ডাউনলোড হয়েছে।',invalid:'তারিখ, সময় ও টাকার পরিমাণ ঠিক করে দাও।'},
+en:{subtitle:'Your personal daily work diary',days:'Total duty days',hours:'Total work hours',income:'Total income',expense:'Total expenses',form:'➕ Add duty record',date:'Date',start:'Duty start',end:'Duty end',meals:'Meals (times)',earn:'Income (₹)',spend:'Daily expenses (₹)',note:'Notes',placeholder:'What did you do today?',time:'Work time',hour:'hours',save:'💾 Save record',history:'📅 Duty history',empty:'No records yet.',net:'Net balance',meal:'meals',edit:'Edit',del:'Delete',saved:'Record saved!',device:'Records are saved on this phone.',backup:'💾 Backup & Restore',export:'Download backup',restore:'Restore backup',clear:'Clear all records',backupNote:'Download a backup before changing phones.',confirm:'Delete all records?',restored:'Backup restored.',badFile:'Choose a valid backup JSON file.',exported:'Backup downloaded.',invalid:'Check date, time and amount fields.'}
+};
+let lang='bn',records=[];
+try{records=JSON.parse(localStorage.getItem('myDutyHisabData')||'[]');if(!Array.isArray(records))records=[]}catch(e){records=[]}
+const t=k=>words[lang][k]||k;
+function saveStore(){localStorage.setItem('myDutyHisabData',JSON.stringify(records))}
+function hoursFor(a,b){if(!a||!b)return 0;let x=a.split(':').map(Number),y=b.split(':').map(Number),m=y[0]*60+y[1]-x[0]*60-x[1];if(m<0)m+=1440;return m/60}
+function duration(){$('duration').textContent=t('time')+': '+hoursFor($('start').value,$('end').value)+' '+t('hour')}
+function money(v){return '₹'+Number(v||0).toLocaleString('en-IN',{maximumFractionDigits:2})}
+function render(){
+$('days').textContent=records.length;
+$('hours').textContent=records.reduce((s,r)=>s+Number(r.hours||0),0).toLocaleString('en-IN');
+$('income').textContent=money(records.reduce((s,r)=>s+Number(r.earn||0),0));
+$('expense').textContent=money(records.reduce((s,r)=>s+Number(r.spend||0),0));
+const box=$('records');box.replaceChildren();
+if(!records.length){box.textContent=t('empty');box.className='muted';return}
+box.className='';
+[...records].sort((a,b)=>b.date.localeCompare(a.date)).forEach(r=>{
+const item=document.createElement('div');item.className='entry';
+const title=document.createElement('b');title.textContent=r.date+' · '+r.hours+' '+t('hour');item.append(title);
+const p=document.createElement('p');p.textContent=r.start+'–'+r.end+' · '+r.meals+' '+t('meal')+' · '+t('income')+': '+money(r.earn)+' · '+t('expense')+': '+money(r.spend)+' · '+t('net')+': '+money(Number(r.earn)-Number(r.spend));item.append(p);
+if(r.note){const n=document.createElement('p');n.textContent=r.note;item.append(n)}
+const e=document.createElement('button');e.textContent=t('edit');e.onclick=()=>{['date','start','end','meals'].forEach(k=>$(k).value=r[k]);$('earn').value=r.earn;$('spend').value=r.spend;$('note').value=r.note||'';duration();window.scrollTo({top:0,behavior:'smooth'})};item.append(e);
+const d=document.createElement('button');d.textContent=t('del');d.onclick=()=>{records=records.filter(x=>x.date!==r.date);saveStore();render()};item.append(d);box.append(item);
+});
+}
+const map={subtitle:'subtitle',daysLabel:'days',hoursLabel:'hours',incomeLabel:'income',expenseLabel:'expense',formTitle:'form',dateLabel:'date',startLabel:'start',endLabel:'end',mealsLabel:'meals',incomeFieldLabel:'earn',expenseFieldLabel:'spend',noteLabel:'note',saveBtn:'save',historyTitle:'history',backupTitle:'backup',exportBtn:'export',importBtn:'restore',clearBtn:'clear',backupNote:'backupNote'};
+function translate(){Object.entries(map).forEach(([id,k])=>$(id).textContent=t(k));$('note').placeholder=t('placeholder');$('langBtn').textContent=lang==='bn'?'English':'বাংলা';render();duration()}
+$('langBtn').onclick=()=>{lang=lang==='bn'?'en':'bn';translate()};
+['start','end'].forEach(k=>$(k).addEventListener('change',duration));
+$('saveBtn').onclick=()=>{
+const date=$('date').value,earn=Number($('earn').value||0),spend=Number($('spend').value||0),meals=Number($('meals').value||0),start=$('start').value,end=$('end').value;
+if(!date||!start||!end||earn<0||spend<0||meals<0){$('feedback').textContent=t('invalid');return}
+const r={date,start,end,meals,earn,spend,note:$('note').value.trim(),hours:hoursFor(start,end)};
+records=records.filter(x=>x.date!==date);records.push(r);saveStore();render();$('feedback').textContent=t('saved');
+$('earn').value='';$('spend').value='';$('note').value='';$('meals').value='2';
+};
+$('clearBtn').onclick=()=>{if(confirm(t('confirm'))){records=[];saveStore();render()}};
+$('exportBtn').onclick=()=>{const blob=new Blob([JSON.stringify(records,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='My-Duty-Hisab-Backup.json';a.click();URL.revokeObjectURL(url);$('feedback').textContent=t('exported')};
+$('importBtn').onclick=()=>$('importFile').click();
+$('importFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const data=JSON.parse(await f.text());if(!Array.isArray(data)||data.some(r=>!r.date||typeof r.hours!=='number'))throw Error();records=data;saveStore();render();$('feedback').textContent=t('restored')}catch(err){$('feedback').textContent=t('badFile')}e.target.value=''};
+$('date').value=new Date().toLocaleDateString('en-CA');translate();
+
+</script>
+</body></html>
